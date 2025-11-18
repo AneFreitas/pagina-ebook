@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Inteligente por Ane Freitas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+            color: #1a202c;
+        }
+        .text-primary { color: #3182ce; } /* Azul para links e destaques */
+        .bg-primary { background-color: #3182ce; }
+        .text-secondary { color: #f6ad55; } /* Amarelo/Laranja para acentos */
+        .bg-secondary { background-color: #f6ad55; }
+        .cta-button {
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        /* Estilos do Chatbot */
+        #chatbot-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            cursor: pointer;
+            background-color: #3182ce;
+            color: white;
+            padding: 1rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+        #chatbot-icon:hover {
+            transform: scale(1.05);
+        }
+        #chatbot-window {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 350px;
+            height: 450px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            z-index: 999;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        @media (max-width: 400px) {
+            #chatbot-window {
+                width: 90%;
+                right: 5%;
+            }
+        }
+        .chat-header {
+            background-color: #3182ce;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-body {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background-color: #f0f4f8;
+        }
+        .chat-message {
+            max-width: 80%;
+            padding: 0.5rem 0.75rem;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            word-wrap: break-word;
+        }
+        .message-bot {
+            background-color: #e2e8f0;
+            align-self: flex-start;
+        }
+        .message-user {
+            background-color: #3182ce;
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        .chat-options button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+        .chat-options button:hover {
+            background-color: #f7fafc;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+<!-- Floating Chatbot Icon -->
+<div id="chatbot-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4l-4 4v-4z"/>
+    </svg>
+</div>
+
+<!-- Chatbot Window -->
+<div id="chatbot-window">
+    <div class="chat-header">
+        <h3 class="font-bold">IA Assistant - Marketing Inteligente</h3>
+        <button id="close-chat" class="p-1 rounded-full hover:bg-white hover:text-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+    <div id="chat-body" class="chat-body flex flex-col">
+        <!-- Initial Message and Options -->
+        <div class="chat-message message-bot">
+            Olá! Sou o Assistente de IA. Quer uma amostra gratuita das táticas que você encontrará no nosso portal?
+            Selecione um prompt abaixo:
+        </div>
+        <div id="chat-options" class="mt-4 space-y-2">
+            <button class="chat-option-btn" data-prompt-id="1">Otimizar Meus Anúncios (Tráfego Pago)</button>
+            <button class="chat-option-btn" data-prompt-id="2">Criar 5 Assuntos de Email que Convertem (E-mail Marketing)</button>
+            <button class="chat-option-btn" data-prompt-id="3">Gerar 3 Ideias de Conteúdo que Viralizam (Redes Sociais)</button>
+        </div>
+        <!-- Prompt Response (Hidden by default) -->
+        <div id="prompt-display" style="display:none;" class="mt-4">
+            <div class="chat-message message-user">Quero este prompt!</div>
+            <div id="prompt-response" class="chat-message message-bot"></div>
+            <button id="reset-chat" class="mt-4 w-full bg-secondary text-white p-2 rounded-lg cta-button">Resetar Chat</button>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="max-w-4xl mx-auto p-6 bg-white shadow-xl rounded-xl my-10">
+
+    <!-- SEÇÃO 1: HEADLINE -->
+    <header class="text-center mb-12">
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-4">
+            Você está Cansado(a) de "Apagar Incêndios" e Fazer Marketing Operacional?
+        </h1>
+        <h2 class="text-xl sm:text-2xl font-semibold text-primary">
+            Descubra como usar a Inteligência Artificial para **Dobrar sua Produtividade**, Automatizar 80% das Tarefas Repetitivas e (finalmente) Ter Tempo para Focar em Estratégia.
+        </h2>
+    </header>
+
+    <!-- CTA PRIMÁRIO -->
+    <div class="text-center mb-12">
+        <a href="https://pay.kiwify.com.br/1ipRsQs" target="_blank" class="cta-button bg-secondary text-white text-2xl font-bold py-4 px-10 rounded-full shadow-lg hover:shadow-xl inline-block">
+            👉 QUERO MEU ACESSO IMEDIATO
+        </a>
+        <p class="text-sm text-gray-500 mt-2">Garantia de 7 Dias | Acesso Vitalício</p>
+    </div>
+
+    <!-- SEÇÃO 3: APRESENTAÇÃO DO PRODUTO (IMAGEM) -->
+    <div class="flex flex-col md:flex-row items-center justify-center gap-8 mb-16">
+        <div class="md:w-1/2">
+            <h3 class="text-3xl font-bold text-gray-900 mb-4">Apresento o Portal "Marketing Inteligente"</h3>
+            <p class="text-gray-600 mb-4">
+                Este não é mais um "ebook teórico" sobre como a IA vai mudar o mundo. É um **portal de execução prática e tática**, com 15 capítulos "mão na massa", que vai lhe ensinar o **COMO FAZER**.
+            </p>
+            <p class="text-lg font-semibold text-gray-800 mb-4">
+                Eu, Ane Freitas, condensei anos de testes e estratégias em um sistema passo a passo.
+            </p>
+            <ul class="space-y-3 text-gray-700">
+                <li>✅ **Escrever posts, roteiros e anúncios** em 5 minutos, não em 5 horas.</li>
+                <li>✅ **Automatizar seu atendimento** no Instagram para qualificar leads enquanto você dorme.</li>
+                <li>✅ **Configurar anúncios** que *realmente* aprendem e encontram clientes para você.</li>
+                <li>✅ **Analisar seus dados** para que a IA lhe diga quais leads estão prontos para comprar *agora*.</li>
+            </ul>
+        </div>
+        <div class="md:w-1/2 flex justify-center">
+            <!-- Capa do Produto -->
+            <img src="https://i.postimg.cc/Y9BVFkYc/Captura-de-Tela-2025-11-17-a-s-17-37-13.png" alt="Capa do Ebook Marketing Inteligente por Ane Freitas" class="rounded-lg shadow-2xl w-full max-w-xs md:max-w-md">
+        </div>
+    </div>
+
+    <!-- SEÇÃO 4: O QUE VOCÊ VAI APRENDER (MÓDULOS) -->
+    <section class="mb-16">
+        <h2 class="text-4xl font-bold text-center text-primary mb-8">O Mapa da Mina: O Que Você Terá Acesso Imediato</h2>
+        
+        <div class="space-y-6">
+            <!-- MÓDULO 1 -->
+            <div class="bg-gray-100 p-6 rounded-lg shadow-md border-t-4 border-primary">
+                <h3 class="text-2xl font-bold mb-3 flex items-center text-gray-800">
+                    🧠 MÓDULO 1: O ARSENAL (FUNDAMENTOS E TÁTICAS)
+                </h3>
+                <ul class="list-disc list-inside ml-4 text-gray-600 space-y-1">
+                    <li>Capítulo 1: O que é IA no Marketing (A Versão Prática e Sem "Enrolação")</li>
+                    <li>Capítulo 2: Análise Tática: Como a IA Dobra sua Produtividade (Exemplos Reais)</li>
+                    <li>Capítulo 3: O Seu Arsenal: Ferramentas de IA (Muitas Gratuitas) para cada tarefa</li>
+                    <li>Capítulo 4: Como Aplicar os Princípios da Netflix e Amazon no Seu Negócio (De Graça!)</li>
+                    <li>Capítulo 5: O Manual do Mundo Real: Desafios, Ética e Como Evitar Conteúdo "Sem Alma"</li>
+                </ul>
+            </div>
+
+            <!-- MÓDULO 2 -->
+            <div class="bg-gray-100 p-6 rounded-lg shadow-md border-t-4 border-secondary">
+                <h3 class="text-2xl font-bold mb-3 flex items-center text-gray-800">
+                    ⚙️ MÓDULO 2: O SISTEMA (ESTRATÉGIAS DE AUTOMAÇÃO)
+                </h3>
+                <ul class="list-disc list-inside ml-4 text-gray-600 space-y-1">
+                    <li>Capítulo 6: O "Como Fazer": Automação de Email Marketing com IA (Prompts e Ferramentas)</li>
+                    <li>Capítulo 7: O "Como Fazer": Automação de Redes Sociais (O Fim das DMs de "Preço")</li>
+                    <li>Capítulo 8: O "Como Fazer": Automação de Anúncios (O "Alimento" Correto para o Algoritmo)</li>
+                    <li>Capítulo 9: O "Como Fazer": Automação de Chatbots (O Vendedor que Nunca Dorme)</li>
+                    <li>Capítulo 10: A "Cola" do Sistema: Como Integrar Todas as Ferramentas (Make e Zapier)</li>
+                </ul>
+            </div>
+
+            <!-- MÓDULO 3 -->
+            <div class="bg-gray-100 p-6 rounded-lg shadow-md border-t-4 border-primary">
+                <h3 class="text-2xl font-bold mb-3 flex items-center text-gray-800">
+                    📊 MÓDULO 3: O GPS (ANÁLISE E DECISÃO)
+                </h3>
+                <ul class="list-disc list-inside ml-4 text-gray-600 space-y-1">
+                    <li>Capítulo 11: O Combustível da IA: Como Coletar e Limpar seus Dados (O Google Sheets é seu aliado)</li>
+                    <li>Capítulo 12: A Bola de Cristal: Análise Preditiva (Descubra quem vai comprar *antes* de comprar)</li>
+                    <li>Capítulo 13: O "Como Fazer": Personalização de Conteúdo 1-para-1 (O Fim das Mensagens Genéricas)</li>
+                    <li>Capítulo 14: O "Motor" da IA: Aprendizado de Máquina (Como a IA *realmente* aprende com seus clientes)</li>
+                    <li>Capítulo 15: O "Ciclo de Feedback": Como VOCÊ otimiza a estratégia e se torna o piloto da IA</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- SEÇÃO 5: OS BÔNUS -->
+    <section class="mb-16 bg-gray-900 text-white p-8 rounded-xl shadow-2xl">
+        <h2 class="text-4xl font-extrabold text-center text-secondary mb-8">Ao Garantir seu Acesso Hoje, Você Também Leva (GRÁTIS):</h2>
+        
+        <div class="flex flex-col md:flex-row gap-8">
+            <div class="md:w-1/2 p-4 bg-gray-800 rounded-lg">
+                <h3 class="text-2xl font-bold text-primary mb-3">🔥 BÔNUS #1: A Versão Ebook em PDF</h3>
+                <p class="text-lg">Gosta de ler offline, no Kindle, tablet ou prefere imprimir? Você receberá o **Ebook "Marketing Inteligente" completo**, lindamente diagramado em PDF, para baixar e guardar para sempre.</p>
+                <p class="text-sm font-light mt-2 text-gray-400">(Valor: R$ 67,00)</p>
+            </div>
+            <div class="md:w-1/2 p-4 bg-gray-800 rounded-lg">
+                <h3 class="text-2xl font-bold text-primary mb-3">🚀 BÔNUS #2: O Arsenal de Prompts</h3>
+                <p class="text-lg">Não sabe o que pedir à IA? Eu compilei um "Cheat Sheet" com os **10 prompts "mão na massa"** mais poderosos do portal, prontos para você copiar e colar e ter resultados imediatos.</p>
+                <p class="text-sm font-light mt-2 text-gray-400">(Valor: R$ 47,00)</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SEÇÃO 6: A OFERTA (CTA FINAL) -->
+    <section class="text-center mb-16">
+        <h2 class="text-4xl font-extrabold text-gray-900 mb-4">Tenha Acesso Imediato ao Portal + Bônus</h2>
+
+        <div class="my-6">
+            <p class="text-xl text-gray-600 mb-2">Seu investimento total hoje é de:</p>
+            <p class="text-2xl font-semibold text-red-500 line-through">~~De R$ 297,00~~</p>
+            <h3 class="text-5xl font-extrabold text-primary mb-4">
+                Por Apenas 12x de R$ 9,74
+            </h3>
+            <p class="text-3xl font-bold text-gray-900 mb-6">(Ou R$ 97,00 à vista)</p>
+        </div>
+        
+        <a href="https://pay.kiwify.com.br/1ipRsQs" target="_blank" class="cta-button bg-primary text-white text-3xl font-bold py-5 px-12 rounded-full shadow-2xl hover:bg-blue-600 inline-block">
+            👉 SIM, QUERO DOBRAR MINHA PRODUTIVIDADE!
+        </a>
+        <p class="text-sm text-gray-500 mt-3">Compra 100% Segura | Acesso Imediato por E-mail</p>
+    </section>
+
+    <!-- SEÇÃO 7: GARANTIA -->
+    <section class="mb-16 p-8 bg-white border border-green-300 rounded-xl shadow-lg">
+        <div class="flex items-center justify-center gap-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <h2 class="text-3xl font-extrabold text-gray-900">Sua Satisfação ou Seu Dinheiro de Volta</h2>
+        </div>
+        <p class="text-center text-lg text-gray-600 mt-4">
+            Eu confio tanto neste método que o risco é todo meu. Você tem **7 dias de garantia incondicional**. Se você acessar o portal e achar que o conteúdo não é prático o suficiente ou simplesmente não é para você, basta enviar um e-mail e eu devolvo 100% do seu dinheiro. Sem perguntas.
+        </p>
+    </section>
+
+    <!-- SEÇÃO 8: SOBRE A AUTORA -->
+    <section class="mb-16 p-8 bg-gray-100 rounded-xl shadow-inner">
+        <div class="flex flex-col md:flex-row items-center gap-8">
+            <!-- Placeholder para a foto -->
+            <div class="flex-shrink-0">
+                <img src="https://i.postimg.cc/fT7bSTdN/Captura-de-Tela-2025-09-09-a-s-18-24-21.png" alt="Foto de Ane Freitas" class="h-40 w-40 object-cover rounded-full shadow-lg">
+            </div>
+            
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Quem é Ane Freitas?</h2>
+                <p class="text-lg font-semibold text-primary mb-4">Estrategista de Marketing e IA | Há mais de 1 ano lucrando com IA</p>
+                
+                <p class="text-gray-700">
+                    Olá, eu sou **Ane Freitas**! Por anos, eu vivi nas trincheiras do marketing digital, exatamente como você. Eu conheço a sensação de *burnout*, de passar noites em claro otimizando campanhas e de sentir que o dia precisava ter 48 horas.
+                </p>
+                <p class="text-gray-700 mt-2">
+                    Eu não sou uma programadora ou uma cientista de dados. Eu sou uma estrategista de marketing que decidiu *dominar* a IA para que ela trabalhasse para mim. Condensei todo o meu aprendizado prático neste portal para que você também possa sair do operacional e se tornar a estrategista que o seu negócio (ou seu chefe) precisa.
+                </p>
+                <div class="mt-4 text-primary font-semibold">
+                    [Ícones de Redes Sociais Aqui]
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SEÇÃO 9: FAQ -->
+    <section>
+        <h2 class="text-4xl font-bold text-center text-gray-900 mb-8">Perguntas Frequentes</h2>
+        <div class="space-y-4 text-gray-700">
+            <div class="bg-gray-50 p-4 rounded-lg shadow-sm border-l-4 border-secondary">
+                <p class="font-bold">Como vou receber o acesso?</p>
+                <p>Imediatamente após a confirmação do pagamento, você receberá um e-mail automático da Kiwify com seu link de acesso, login e senha para o portal de membros.</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg shadow-sm border-l-4 border-secondary">
+                <p class="font-bold">Por quanto tempo tenho acesso?</p>
+                <p>O acesso é **vitalício**! Você pode consultar os 15 capítulos e os bônus para sempre, incluindo quaisquer atualizações futuras.</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg shadow-sm border-l-4 border-secondary">
+                <p class="font-bold">Preciso de ferramentas caras para aplicar o que é ensinado?</p>
+                <p>Não! O foco do "Marketing Inteligente" é em produtividade prática. Em todos os módulos, recomendamos **ferramentas gratuitas ou com planos gratuitos** (como Canva, HubSpot Gratuito, Google Sheets, Make.com, etc.) para você aplicar as táticas sem custo adicional.</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg shadow-sm border-l-4 border-secondary">
+                <p class="font-bold">É para iniciantes ou avançados?</p>
+                <p>É para ambos. Se você é iniciante, ele é um mapa perfeito do zero. Se você é avançado, você vai otimizar seus processos, aprender a usar ferramentas de dados (Módulo 3) e parar de perder tempo com tarefas que a IA pode fazer.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA FINAL REFORÇO -->
+    <div class="text-center mt-12 mb-6">
+        <a href="https://pay.kiwify.com.br/1ipRsQs" target="_blank" class="cta-button bg-primary text-white text-3xl font-bold py-5 px-12 rounded-full shadow-2xl hover:bg-blue-600 inline-block">
+            GARANTA SEU ACESSO AGORA!
+        </a>
+    </div>
+
+</div>
+
+<script>
+    const prompts = {
+        1: {
+            title: "Prompt Tático de Otimização de Anúncios",
+            content: "Aja como um Estrategista Sênior de Tráfego Pago. Meu objetivo é reduzir o CPA (Custo por Aquisição) da minha campanha de [Produto X]. Analise os seguintes dados do Meta Ads: [Cole aqui o CTR, Taxa de Conversão, e o Custo por Visualização de 3 segundos]. Com base nisso, sugira 3 variações de título e 3 de Call-to-Action (CTA) que eu devo testar na Otimização Dinâmica de Criativos para melhorar o engajamento e a qualidade do lead."
+        },
+        2: {
+            title: "Prompt de Copywriting Preditivo para E-mail",
+            content: "Aja como um Copywriter de E-mail Marketing focado em previsão de comportamento. Meu público é [descreva sua Persona - ex: 'profissionais de RH']. O objetivo do e-mail é [seu objetivo - ex: 'marcar uma demonstração']. Crie 5 linhas de assunto para o e-mail, sendo que 2 focadas em 'urgência' e 3 focadas em 'solução de problema' [a dor da Persona - ex: 'alto turnover de funcionários']. Inclua uma frase curta para usar como 'pré-header' que complemente o assunto."
+        },
+        3: {
+            title: "Prompt de Geração de Ideias de Conteúdo para Múltiplas Redes",
+            content: "Aja como um Gerente de Conteúdo Multimodal. Meu produto resolve o problema de [descreva o problema - ex: 'falta de tempo para limpar a casa']. Meu tom de voz é [ex: 'divertido e direto']. Gere 3 ideias de conteúdo viral: 1 para um Reel (com gancho e roteiro de 3 passos), 1 para um Carrossel (com 5 slides de dica rápida) e 1 para um Post estático (com uma estatística chocante). Foque em 'Economia de Tempo' como o principal benefício."
+        }
+    };
+
+    const chatbotIcon = document.getElementById('chatbot-icon');
+    const chatbotWindow = document.getElementById('chatbot-window');
+    const closeChatBtn = document.getElementById('close-chat');
+    const chatBody = document.getElementById('chat-body');
+    const chatOptionsContainer = document.getElementById('chat-options');
+    const promptDisplay = document.getElementById('prompt-display');
+    const promptResponse = document.getElementById('prompt-response');
+    const resetChatBtn = document.getElementById('reset-chat');
+
+    function toggleChatbot() {
+        chatbotWindow.style.display = (chatbotWindow.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+    function displayPrompt(id) {
+        const data = prompts[id];
+        
+        // 1. Oculta opções iniciais
+        chatOptionsContainer.style.display = 'none';
+        
+        // 2. Exibe a resposta do prompt
+        promptResponse.innerHTML = `
+            <div class="font-bold text-lg mb-2">${data.title}</div>
+            <p class="text-sm italic">Copie e cole este prompt na sua IA de preferência (ChatGPT, Gemini, etc.):</p>
+            <div class="mt-2 p-3 bg-white border border-dashed border-gray-400 rounded-lg text-xs break-all">${data.content}</div>
+        `;
+
+        // 3. Mostra a área de resposta e scroll
+        promptDisplay.style.display = 'flex';
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function resetChat() {
+        // Oculta a resposta
+        promptDisplay.style.display = 'none';
+        // Exibe as opções novamente
+        chatOptionsContainer.style.display = 'block';
+        // Rola para o topo
+        chatBody.scrollTop = 0;
+    }
+
+    // Initialize Event Listeners
+    function setupChatbot() {
+        // Listener para abrir/fechar o chat
+        chatbotIcon.addEventListener('click', toggleChatbot);
+        closeChatBtn.addEventListener('click', toggleChatbot);
+        
+        // Listener para resetar o chat
+        resetChatBtn.addEventListener('click', resetChat);
+
+        // Listener para as opções (buttons)
+        document.querySelectorAll('.chat-option-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const promptId = this.getAttribute('data-prompt-id');
+                displayPrompt(promptId);
+            });
+        });
+    }
+
+    // Garante que o setup roda depois que todos os elementos estão no DOM
+    document.addEventListener('DOMContentLoaded', setupChatbot);
+</script>
+</body>
+</html>
